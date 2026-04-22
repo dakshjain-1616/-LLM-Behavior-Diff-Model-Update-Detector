@@ -163,36 +163,83 @@ python -m llm_behavior_diff.mcp_server
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        CLI / MCP Server                      │
-└──────────────────────┬────────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      LLM Runner                              │
-│  ┌──────────────┐  ┌──────────────────┐  ┌────────────────┐  │
-│  │   Ollama     │  │    OpenRouter    │  │   LLM Judge    │  │
-│  │   Client     │  │     Client       │  │   (Optional)   │  │
-│  └──────────────┘  └──────────────────┘  └────────────────┘  │
-└──────────────────────┬────────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Semantic Diff Engine                      │
-│  ┌──────────────────┐  ┌──────────────────────────────────┐  │
-│  │ Embedding Differ │  │      Combined Scorer             │  │
-│  │ (sentence-       │  │  (embeddings + LLM judge)        │  │
-│  │  transformers)   │  │                                  │  │
-│  └──────────────────┘  └──────────────────────────────────┘  │
-└──────────────────────┬────────────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────────┐
-│                   Report Generator                           │
-│              (Jinja2 → HTML/Markdown)                        │
-└─────────────────────────────────────────────────────────────┘
-```
+<svg width="100%" height="380" viewBox="0 0 800 380" xmlns="http://www.w3.org/2000/svg">
+  <text x="400" y="25" font-size="20" font-weight="bold" text-anchor="middle" fill="#333">LLM Behavior Diff Pipeline</text>
+  
+  <!-- Model A -->
+  <rect x="30" y="70" width="110" height="50" fill="#4CAF50" stroke="#333" stroke-width="2" rx="5"/>
+  <text x="85" y="100" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Model A</text>
+  <text x="85" y="115" font-size="9" text-anchor="middle" fill="white">(e.g., Qwen3)</text>
+  
+  <!-- Model B -->
+  <rect x="660" y="70" width="110" height="50" fill="#4CAF50" stroke="#333" stroke-width="2" rx="5"/>
+  <text x="715" y="100" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Model B</text>
+  <text x="715" y="115" font-size="9" text-anchor="middle" fill="white">(e.g., Mistral)</text>
+  
+  <!-- Prompt Suite -->
+  <rect x="330" y="70" width="140" height="50" fill="#2196F3" stroke="#333" stroke-width="2" rx="5"/>
+  <text x="400" y="100" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Prompt Suite</text>
+  <text x="400" y="115" font-size="9" text-anchor="middle" fill="white">(50+ test prompts)</text>
+  
+  <!-- Arrows down -->
+  <line x1="85" y1="120" x2="85" y2="160" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="400" y1="120" x2="400" y2="160" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="715" y1="120" x2="715" y2="160" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Responses -->
+  <rect x="40" y="160" width="90" height="40" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1" rx="3"/>
+  <text x="85" y="180" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">Responses A</text>
+  <text x="85" y="195" font-size="8" text-anchor="middle" fill="#2E7D32">(50 outputs)</text>
+  
+  <rect x="670" y="160" width="90" height="40" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1" rx="3"/>
+  <text x="715" y="180" font-size="10" font-weight="bold" text-anchor="middle" fill="#2E7D32">Responses B</text>
+  <text x="715" y="195" font-size="8" text-anchor="middle" fill="#2E7D32">(50 outputs)</text>
+  
+  <!-- Arrows to comparison -->
+  <line x1="130" y1="180" x2="310" y2="180" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="670" y1="180" x2="490" y2="180" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Comparison -->
+  <rect x="310" y="160" width="180" height="40" fill="#FF9800" stroke="#333" stroke-width="2" rx="3"/>
+  <text x="400" y="180" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Semantic Comparison</text>
+  <text x="400" y="195" font-size="9" text-anchor="middle" fill="white">(Embeddings + LLM Judge)</text>
+  
+  <!-- Arrow down -->
+  <line x1="400" y1="200" x2="400" y2="240" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Diff Analysis -->
+  <rect x="280" y="240" width="240" height="50" fill="#9C27B0" stroke="#333" stroke-width="2" rx="5"/>
+  <text x="400" y="260" font-size="12" font-weight="bold" text-anchor="middle" fill="white">Behavior Diff Analysis</text>
+  <text x="400" y="278" font-size="9" text-anchor="middle" fill="white">Changes, Similarities, Regressions</text>
+  
+  <!-- Arrow down -->
+  <line x1="400" y1="290" x2="400" y2="330" stroke="#333" stroke-width="2" marker-end="url(#arrowhead)"/>
+  
+  <!-- Report -->
+  <rect x="300" y="330" width="200" height="35" fill="#F44336" stroke="#333" stroke-width="2" rx="5"/>
+  <text x="400" y="355" font-size="12" font-weight="bold" text-anchor="middle" fill="white">HTML Report + JSON</text>
+  
+  <!-- Legend -->
+  <g id="legend">
+    <rect x="40" y="280" width="180" height="70" fill="#f9f9f9" stroke="#ddd" stroke-width="1" rx="3"/>
+    <text x="130" y="300" font-size="11" font-weight="bold" text-anchor="middle" fill="#333">Diff Categories</text>
+    
+    <circle cx="55" cy="320" r="4" fill="#4CAF50"/>
+    <text x="70" y="324" font-size="9" fill="#333">✓ No change</text>
+    
+    <circle cx="55" cy="340" r="4" fill="#FF9800"/>
+    <text x="70" y="344" font-size="9" fill="#333">⚠ Minor diff</text>
+    
+    <circle cx="55" cy="360" r="4" fill="#F44336"/>
+    <text x="70" y="364" font-size="9" fill="#333">⨯ Major regression</text>
+  </g>
+  
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <polygon points="0 0, 10 3, 0 6" fill="#333"/>
+    </marker>
+  </defs>
+</svg>
 
 ## 🧪 Prompt Suites
 
