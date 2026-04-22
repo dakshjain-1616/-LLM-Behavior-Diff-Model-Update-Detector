@@ -21,11 +21,10 @@ from .differ import create_differ
 from .judge import CombinedScorer, LLMJudge
 from .report import ReportGenerator
 
-# Main app - use invoke_without_command to show help when no subcommand given
+# Main app - use callback for top-level help
 app = typer.Typer(
     help="LLM Behavior Diff — Model Update Detector",
-    rich_markup_mode="rich",
-    invoke_without_command=True
+    rich_markup_mode="rich"
 )
 
 console = Console()
@@ -50,13 +49,6 @@ def main(
     if version:
         console.print("[bold]LLM Behavior Diff[/bold] version 0.1.0")
         raise typer.Exit()
-    # If no subcommand was invoked, show help
-    if ctx.invoked_subcommand is None:
-        console.print("[bold blue]LLM Behavior Diff[/bold blue]")
-        console.print("\nUsage: llm-diff [COMMAND] [OPTIONS]")
-        console.print("\nCommands:")
-        console.print("  run    Run a comparison between two models")
-        console.print("\nRun 'llm-diff --help' for more information.")
 
 
 @app.command()

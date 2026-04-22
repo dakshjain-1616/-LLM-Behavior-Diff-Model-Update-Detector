@@ -3,6 +3,10 @@
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Tests](https://img.shields.io/badge/tests-46%20passing-brightgreen.svg)]()
+[![VS Code Extension](https://img.shields.io/badge/VS%20Code-NEO-blue?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=NeoResearchInc.heyneo)
+[![Cursor Extension](https://img.shields.io/badge/Cursor-NEO-green?logo=cursor&logoColor=white)](https://marketplace.cursorapi.com/items/?itemName=NeoResearchInc.heyneo)
+
+**🤖 Autonomously Built Using [NEO](https://heyneo.com) — Your Autonomous AI Engineering Agent**
 
 A production-grade tool for detecting semantic behavioral changes between Large Language Model versions.
 
