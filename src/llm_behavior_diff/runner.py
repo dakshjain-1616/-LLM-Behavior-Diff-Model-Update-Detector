@@ -84,6 +84,7 @@ class OllamaClient:
         data = response.json()
         return [model["name"] for model in data.get("models", [])]
     
+
     async def health_check(self) -> bool:
         """Check if Ollama is reachable.
         
@@ -254,6 +255,8 @@ class LLMRunner:
                 if not self.openrouter_client:
                     raise ValueError("OpenRouter API key not provided")
                 result = await self._run_openrouter(model_config, prompt_text)
+            elif model_config.provider == ProviderType.STUB:
+                result = self._run_stub(model_config, prompt_text)
             else:
                 raise ValueError(f"Unknown provider: {model_config.provider}")
             
@@ -344,6 +347,26 @@ class LLMRunner:
             "raw": response
         }
     
+    def _run_stub(self, model_config: ModelConfig, prompt_text: str) -> Dict[str, Any]:
+        """Return a deterministic fake response for offline/demo use.
+
+        The seed is (model_name, temperature) so different models produce
+        different text on the same prompt, letting the diff pipeline be
+        exercised end to end with no external services.
+        """
+        import hashlib
+        seed = f"{model_config.name}|{model_config.temperature}|{prompt_text}"
+        h = hashlib.sha256(seed.encode()).hexdigest()
+        # Pick a short templated reply that varies by model name.
+        templates = [
+            f"[{model_config.name}] {prompt_text[:60]} -> answer token {h[:6]}.",
+            f"[{model_config.name}] reply: {h[:8]}. prompt was: {prompt_text[:40]}",
+            f"Model {model_config.name} says: {h[:10]}",
+        ]
+        idx = int(h[:2], 16) % len(templates)
+        text = templates[idx]
+        return {"text": text, "tokens_used": len(text.split()), "raw": {"stub": True, "hash": h}}
+
     async def health_check(self, provider: ProviderType) -> bool:
         """Check health of a provider.
         

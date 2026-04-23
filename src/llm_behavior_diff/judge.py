@@ -45,7 +45,7 @@ class LLMJudge:
     
     def __init__(
         self,
-        judge_model: str = "openrouter/openai/gpt-4o-mini",
+        judge_model: str = "openai/gpt-4o-mini",
         openrouter_api_key: Optional[str] = None,
         temperature: float = 0.3
     ) -> None:
@@ -210,7 +210,7 @@ class CombinedScorer:
         embedding_weight: float = 0.6,
         judge_weight: float = 0.4,
         openrouter_api_key: Optional[str] = None,
-        judge_model: str = "openrouter/openai/gpt-4o-mini"
+        judge_model: str = "openai/gpt-4o-mini"
     ) -> None:
         """Initialize combined scorer.
         

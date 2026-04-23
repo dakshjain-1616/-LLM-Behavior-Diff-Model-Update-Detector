@@ -48,7 +48,8 @@ dev = [
 ]
 
 [project.scripts]
-llm-diff = "llm_behavior_diff.cli:main"
+llm-diff = "llm_behavior_diff.cli:app"
+llm-diff-mcp = "llm_behavior_diff.mcp_server:main"
 
 [project.urls]
 Homepage = "https://github.com/example/llm-behavior-diff"

@@ -14,6 +14,7 @@ class ProviderType(str, Enum):
     """Supported LLM providers."""
     OLLAMA = "ollama"
     OPENROUTER = "openrouter"
+    STUB = "stub"
 
 
 class PromptCategory(str, Enum):
@@ -220,8 +221,8 @@ class Settings(BaseModel):
         description="Default embedding model"
     )
     judge_model: str = Field(
-        default="openrouter/openai/gpt-4o-mini",
-        description="Model used for LLM judging"
+        default="google/gemini-2.0-flash-lite-001",
+        description="Model used for LLM judging (OpenRouter model slug, e.g. 'openai/gpt-4o-mini')"
     )
     similarity_threshold: float = Field(
         default=0.85,
